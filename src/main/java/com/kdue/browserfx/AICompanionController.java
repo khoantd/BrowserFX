@@ -771,7 +771,7 @@ public class AICompanionController {
         }
 
         questionInput.clear();
-        addMessage("You", question);
+        addMessage("You: ", question);
         setInteractionEnabled(false);
         executeQuestion(question, AIChatService.PromptType.QUESTION);
     }
@@ -783,7 +783,7 @@ public class AICompanionController {
             return;
         }
 
-        addMessage("You", "📝 Summarize this page");
+        addMessage("You: ", "📝 Summarize this page");
         setInteractionEnabled(false);
         loadingIndicator.setVisible(true);
         loadingIndicator.setManaged(true);
@@ -856,7 +856,7 @@ public class AICompanionController {
             return;
         }
 
-        addMessage("You", "📧 Thông tin liên hệ");
+        addMessage("You: ", "📧 Thông tin liên hệ");
         setInteractionEnabled(false);
         loadingIndicator.setVisible(true);
         loadingIndicator.setManaged(true);
@@ -878,7 +878,7 @@ public class AICompanionController {
             return;
         }
 
-        addMessage("You", "🛒 Help me choose the right product");
+        addMessage("You:", "🛒 Help me choose the right product");
         setInteractionEnabled(false);
         loadingIndicator.setVisible(true);
         loadingIndicator.setManaged(true);
@@ -934,7 +934,7 @@ public class AICompanionController {
             return;
         }
 
-        addMessage("You", "💰 Should I buy? Give me purchase advice");
+        addMessage("You:", "💰 Should I buy? Give me purchase advice");
         setInteractionEnabled(false);
         loadingIndicator.setVisible(true);
         loadingIndicator.setManaged(true);
