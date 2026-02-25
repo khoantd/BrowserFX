@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.kdue.browserfx.AICompanionController"
+      fx:id="root"
+      stylesheets="@ai-companion.css"
+      style="-fx-min-width: 280; -fx-pref-width: 350; -fx-max-width: 640;"
+      styleClass="ai-root">
+
+    <BorderPane style="-fx-background-color: #2d3748;">
+        <left>
+            <Label text="AI Companion" style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;">
+                <BorderPane.margin>
+                    <Insets top="8" right="8" bottom="8" left="12"/>
+                </BorderPane.margin>
+            </Label>
+        </left>
+        <right>
+            <HBox spacing="6" alignment="CENTER_RIGHT">
+                <Label text="Model"
+                       style="-fx-text-fill: #e2e8f0; -fx-font-size: 11;">
+                    <HBox.margin>
+                        <Insets left="4"/>
+                    </HBox.margin>
+                </Label>
+                <ComboBox fx:id="modelSelector"
+                          promptText="Select model"
+                          onAction="#onModelChanged"
+                          minWidth="140"
+                          style="-fx-background-color: #4a5568; -fx-text-fill: white;">
+                    <tooltip>
+                        <Tooltip text="Choose which AI model the assistant uses for this chat"/>
+                    </tooltip>
+                </ComboBox>
+                <Button fx:id="copyConversationButton" text="📋" onAction="#onCopyConversation"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14;">
+                    <tooltip>
+                        <Tooltip text="Copy entire conversation to clipboard"/>
+                    </tooltip>
+                </Button>
+                <Button fx:id="clearButton" text="🗑" onAction="#onClearChat"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14;">
+                    <tooltip>
+                        <Tooltip text="Clear chat"/>
+                    </tooltip>
+                </Button>
+                <Button text="🔒" onAction="#onResetSession"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14;">
+                    <tooltip>
+                        <Tooltip text="Reset AI session now (clear conversation and in-memory page content)"/>
+                    </tooltip>
+                </Button>
+                <Button fx:id="closeButton" text="✕" onAction="#onClose"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14;">
+                    <tooltip>
+                        <Tooltip text="Close AI Companion"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+        </right>
+    </BorderPane>
+
+    <VBox VBox.vgrow="ALWAYS">
+        <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" style="-fx-background-color: #f7fafc;"/>
+    </VBox>
+
+    <VBox fx:id="readingModePanel" visible="false" managed="false" style="-fx-background-color: #fff; -fx-min-height: 200;">
+        <BorderPane>
+            <left>
+                <Label text="Reading Mode" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+            </left>
+            <right>
+                <HBox spacing="4">
+                    <Button text="A-" onAction="#onDecreaseFont" style="-fx-font-size: 10;">
+                        <tooltip>
+                            <Tooltip text="Decrease reading font size"/>
+                        </tooltip>
+                    </Button>
+                    <Button text="A+" onAction="#onIncreaseFont" style="-fx-font-size: 10;">
+                        <tooltip>
+                            <Tooltip text="Increase reading font size"/>
+                        </tooltip>
+                    </Button>
+                    <Button text="✕" onAction="#onCloseReadingMode" style="-fx-font-size: 10;">
+                        <tooltip>
+                            <Tooltip text="Close Reading Mode and return to chat"/>
+                        </tooltip>
+                    </Button>
+                </HBox>
+            </right>
+        </BorderPane>
+        <WebView fx:id="readingModeWebView" VBox.vgrow="ALWAYS" style="-fx-padding: 0;">
+            <VBox.margin>
+                <Insets top="5" right="5" bottom="5" left="5"/>
+            </VBox.margin>
+        </WebView>
+    </VBox>
+
+    <VBox fx:id="inputSection" style="-fx-background-color: #edf2f7;">
+        <VBox fx:id="virtualKeyboardPane" style="-fx-padding: 6 8 4 8; -fx-spacing: 4;">
+            <HBox alignment="CENTER_LEFT" spacing="4">
+                <Label text="⌨ Virtual keyboard" style="-fx-font-size: 11; -fx-text-fill: #4a5568;"/>
+                <Button fx:id="toggleKeyboardButton" text="Show keyboard" onAction="#onToggleVirtualKeyboard"
+                        style="-fx-font-size: 10; -fx-padding: 2 6;">
+                    <tooltip>
+                        <Tooltip text="Toggle on-screen keyboard and smart suggestions"/>
+                    </tooltip>
+                </Button>
+            </HBox>
+            <HBox fx:id="keywordSuggestionsBox" alignment="CENTER_LEFT" spacing="4"
+                  visible="false" managed="false"
+                  style="-fx-padding: 2 0 0 0;">
+                <!-- Suggestion buttons are added dynamically from the controller -->
+            </HBox>
+            <GridPane fx:id="virtualKeyboardGrid" hgap="2" vgap="2"
+                      visible="false" managed="false"/>
+        </VBox>
+        <FlowPane fx:id="quickActionsBar"
+                  hgap="4"
+                  vgap="4"
+                  prefWrapLength="320"
+                  style="-fx-background-color: #edf2f7; -fx-padding: 6 8 4 8;">
+            <Button fx:id="summarizeBtn" text="📝 Tóm tắt trang" onAction="#onSummarize"
+                    styleClass="ai-quick-action-button-primary">
+                <tooltip>
+                    <Tooltip text="Nhận bản tóm tắt ngắn gọn của trang hiện tại"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="linksBtn" text="🔗 Trích xuất liên kết" onAction="#onExtractLinks"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="Liệt kê tất cả liên kết mà trợ lý tìm thấy trên trang này"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="contactBtn" text="📧 Thông tin liên hệ" onAction="#onExtractContact"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="Tìm email, số điện thoại và các thông tin liên hệ khác"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="readingModeBtn" text="📖 Chế độ đọc" onAction="#onReadingMode"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="Mở chế độ đọc sạch, không bị phân tâm cho trang này"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="helpChooseProductBtn" text="🛒 Trợ lý chọn sản phẩm" onAction="#onHelpChooseProduct"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="So sánh các sản phẩm trên trang và nhận gợi ý mua hàng"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="purchaseAdviceBtn" text="💰 Tư vấn mua hàng" onAction="#onPurchaseAdvice"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="Hỏi xem có nên mua dựa trên giá trị và mức độ cần thiết"/>
+                </tooltip>
+            </Button>
+            <Button text="🔒 Reset phiên" onAction="#onResetSession"
+                    styleClass="ai-quick-action-button">
+                <tooltip>
+                    <Tooltip text="Xóa hội thoại và nội dung tạm để tránh rò rỉ bảo mật"/>
+                </tooltip>
+            </Button>
+        </FlowPane>
+        <HBox alignment="CENTER" spacing="8">
+            <TextField fx:id="questionInput" promptText="Ask about this page..."
+                       HBox.hgrow="ALWAYS" onAction="#onSendQuestion">
+                <HBox.margin>
+                    <Insets top="8" right="4" bottom="8" left="8"/>
+                </HBox.margin>
+            </TextField>
+            <Button fx:id="sendButton" text="Send" onAction="#onSendQuestion" style="-fx-background-color: #4299e1; -fx-text-fill: white;">
+                <HBox.margin>
+                    <Insets top="8" right="8" bottom="8" left="4"/>
+                </HBox.margin>
+            </Button>
+        </HBox>
+    </VBox>
+
+    <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false"
+                       style="-fx-progress-color: #4299e1;"/>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: #718096; -fx-font-size: 12;">
+        <VBox.margin>
+            <Insets top="4" right="8" bottom="4" left="8"/>
+        </VBox.margin>
+    </Label>
+
+</VBox>

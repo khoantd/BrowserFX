@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.kdue</groupId>
+    <artifactId>BrowserFX</artifactId>
+    <version>1.0.0</version>
+    <name>BrowserFX</name>
+    <description>Desktop web browser built with JavaFX</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.version>23.0.2</javafx.version>
+        <junit.version>5.10.2</junit.version>
+        <app.name>BrowserFX</app.name>
+        <app.vendor>kdue</app.vendor>
+        <app.version>${project.version}</app.version>
+        <jlink.image>${project.build.directory}/${app.name}</jlink.image>
+        <!-- Default package type for macOS; auto-overridden by OS profiles below -->
+        <package.type>dmg</package.type>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.22.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compile against Java 23 (matches runtime JDK) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>23</release>
+                    <compilerArgs>
+                        <arg>--add-reads</arg>
+                        <arg>com.kdue.browserfx=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- Run: mvn javafx:run -->
+            <!-- Jlink: mvn javafx:jlink  (produces target/BrowserFX/) -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>com.kdue.browserfx/com.kdue.browserfx.BrowserApplication</mainClass>
+                    <options>
+                        <option>--add-reads</option>
+                        <option>com.kdue.browserfx=ALL-UNNAMED</option>
+                        <!-- Avoid native/GPU crash (exit 134 / SIGABRT) on macOS with WebView -->
+                        <option>-Dprism.order=sw</option>
+                    </options>
+                    <launcher>${app.name}</launcher>
+                    <jlinkZipName>${app.name}</jlinkZipName>
+                    <jlinkImageName>${app.name}</jlinkImageName>
+                    <noManPages>true</noManPages>
+                    <stripDebug>true</stripDebug>
+                    <noHeaderFiles>true</noHeaderFiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- ================================================================
+         Native packaging profile
+         Usage:   mvn clean package -Pnative
+         Output:  macOS   → target/BrowserFX-<version>.dmg
+                  Windows → target/BrowserFX-<version>.exe   (requires WiX 3.x)
+                  Linux   → target/BrowserFX-<version>.deb
+         Override type:  mvn clean package -Pnative -Dpackage.type=msi
+         Requires: JDK 14+ jpackage tool (bundled with JDK 23)
+         ================================================================ -->
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <!-- Step 1: create jlink runtime image (runs in package phase) -->
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <version>0.0.8</version>
+                        <executions>
+                            <execution>
+                                <id>create-runtime-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jlink</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Step 2: wrap runtime image into a native installer (runs after jlink) -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--type</argument>
+                                        <argument>${package.type}</argument>
+                                        <argument>--name</argument>
+                                        <argument>${app.name}</argument>
+                                        <argument>--app-version</argument>
+                                        <argument>${app.version}</argument>
+                                        <argument>--vendor</argument>
+                                        <argument>${app.vendor}</argument>
+                                        <argument>--description</argument>
+                                        <argument>${project.description}</argument>
+                                        <argument>--runtime-image</argument>
+                                        <argument>${jlink.image}</argument>
+                                        <argument>--module</argument>
+                                        <argument>com.kdue.browserfx/com.kdue.browserfx.BrowserApplication</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Auto-activated on Windows: sets package.type=exe -->
+        <profile>
+            <id>os-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <package.type>exe</package.type>
+            </properties>
+        </profile>
+
+        <!-- Auto-activated on Linux: sets package.type=deb -->
+        <profile>
+            <id>os-linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>Linux</name>
+                </os>
+            </activation>
+            <properties>
+                <package.type>deb</package.type>
+            </properties>
+        </profile>
+    </profiles>
+</project>

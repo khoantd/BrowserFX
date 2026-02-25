@@ -1,0 +1,17 @@
+/* Global browser UI styles */
+
+/* Make the SplitPane divider thicker and easier to grab on touch screens */
+.split-pane:horizontal > .split-pane-divider {
+    -fx-padding: 0 8 0 8;              /* wider hit area for touch */
+    -fx-background-color: transparent;
+}
+
+.split-pane:horizontal > .split-pane-divider:hover {
+    -fx-background-color: rgba(66, 153, 225, 0.25); /* soft highlight when hovered */
+}
+
+/* Optional: subtle visible handle when focused (keyboard / programmatic focus) */
+.split-pane:horizontal > .split-pane-divider:focused {
+    -fx-background-color: rgba(66, 153, 225, 0.35);
+}
+

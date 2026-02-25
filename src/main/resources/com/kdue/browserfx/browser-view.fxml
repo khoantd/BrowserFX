@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+             fx:controller="com.kdue.browserfx.BrowserController"
+             stylesheets="@browser.css">
+
+    <top>
+        <ToolBar fx:id="toolBar">
+            <Button fx:id="backButton" text="&#9664;" onAction="#onBackClick"/>
+            <Button fx:id="forwardButton" text="&#9654;" onAction="#onForwardClick"/>
+            <Button fx:id="reloadButton" text="&#8635;" onAction="#onReloadClick"/>
+            <Button fx:id="homeButton" text="⌂" onAction="#onHomeClick"/>
+            <HBox HBox.hgrow="ALWAYS">
+                <TextField fx:id="addressBar"
+                           promptText=""
+                           editable="false"
+                           focusTraversable="false"
+                           HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <Button fx:id="aiButton" text="🤖" onAction="#onAIClick">
+                <tooltip>
+                    <Tooltip text="AI Companion (Ctrl+Shift+A)"/>
+                </tooltip>
+            </Button>
+            <Button fx:id="fullscreenButton" text="&#x26F6;" onAction="#onFullscreenClick"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <StackPane>
+            <SplitPane fx:id="mainSplitPane" dividerPositions="1.0" >
+                <WebView fx:id="webView"/>
+                <VBox fx:id="aiPanel" visible="false" managed="false"
+                      style="-fx-background-color: #f5f5f5; -fx-min-width: 280; -fx-pref-width: 350; -fx-max-width: 640;"/>
+            </SplitPane>
+
+            <!-- Simple loading overlay to prevent header flash before tweaks apply -->
+            <VBox fx:id="loadingOverlay"
+                  visible="false" managed="false"
+                  spacing="8"
+                  alignment="CENTER"
+                  style="-fx-background-color: rgba(255,255,255,0.92);">
+                <ProgressIndicator/>
+                <Label text="Đang tải trang..."/>
+            </VBox>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <Label fx:id="statusLabel" text="Ready">
+            <BorderPane.margin>
+                <Insets top="2" right="6" bottom="2" left="6"/>
+            </BorderPane.margin>
+        </Label>
+    </bottom>
+
+</BorderPane>
