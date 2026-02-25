@@ -42,7 +42,7 @@ src/main/resources/com/kdue/browserfx/
 
 The AI Companion feature allows you to ask questions about the current webpage using an AI model via LiteLLM proxy.
 
-### Configuration[config.properties](../../../../../Users/macbook/Library/Application%20Support/BrowserFX/config.properties)
+### Configuration
 
 The config file is stored in an OS-appropriate location:
 
